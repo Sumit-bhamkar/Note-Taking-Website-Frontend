@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { BookOpen } from "lucide-react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 function Navbar() {
   const location = useLocation();
@@ -16,7 +18,7 @@ function Navbar() {
         </Link>
 
         {/* Links */}
-        <div className="space-x-6">
+        <div className="space-x-6 flex items-center">
           <Link
             to="/"
             className={`hover:text-blue-400 transition ${
@@ -33,6 +35,22 @@ function Navbar() {
           >
             Create Note
           </Link>
+          {/* Auth Links */}
+          {(() => {
+            const { token, logout } = useContext(AuthContext);
+            if (token) {
+              return (
+                <button onClick={logout} className="ml-4 bg-red-600 px-3 py-1 rounded text-white">Logout</button>
+              );
+            }
+
+            return (
+              <>
+                <Link to="/login" className="ml-4 hover:text-blue-400 text-gray-300">Sign in</Link>
+                <Link to="/register" className="ml-3 bg-blue-600 px-3 py-1 rounded text-white">Sign up</Link>
+              </>
+            );
+          })()}
         </div>
       </div>
     </nav>

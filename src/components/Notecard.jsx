@@ -1,8 +1,9 @@
 import React, { useContext, useState } from 'react'
 import { NoteContext } from '../context/NoteContext'
+import { Star } from 'lucide-react'
 
 function Notecard({note}) {
-    const {deleteNote,updateNote}=useContext(NoteContext)
+    const {deleteNote, updateNote, toggleFavorite}=useContext(NoteContext)
     const [isEditing,setIsEditing]=useState(false)
     const [editData,setEditData]=useState({
         title:note.title,
@@ -14,7 +15,20 @@ function Notecard({note}) {
       setIsEditing(false)
     }
   return (
-     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all p-5 flex flex-col">
+     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all p-5 flex flex-col relative">
+      {/* Favorite Star Icon */}
+      <button 
+        onClick={() => toggleFavorite(note.id)}
+        className="absolute top-3 right-3 hover:scale-110 transition"
+        aria-label={note.favorite ? "Unmark favorite" : "Mark favorite"}
+      >
+        <Star
+          size={24}
+          style={{ fill: note.favorite ? 'currentColor' : 'none' }}
+          className={note.favorite ? 'text-yellow-400' : 'text-gray-400'}
+        />
+      </button>
+      
       {isEditing ? (
         <>
           {/* Edit Mode */}
@@ -56,7 +70,7 @@ function Notecard({note}) {
       ) : (
         <>
           {/* View Mode */}
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white pr-8">
             {note.title}
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mt-2 flex-1">

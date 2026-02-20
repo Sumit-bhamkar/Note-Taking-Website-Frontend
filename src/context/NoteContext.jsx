@@ -1,11 +1,15 @@
 import { createContext, useEffect, useState } from "react";
 import BACKEND_URL from "../api/url";
+import { useContext } from "react";
+import { AuthContext } from "./AuthContext";
 
 export const NoteContext = createContext();
 
 export const NoteProvider = ({ children }) => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterDate, setFilterDate] = useState(""); // YYYY-MM-DD
 
   /* =========================
      GET ALL NOTES
@@ -22,9 +26,15 @@ export const NoteProvider = ({ children }) => {
     }
   };
 
+  const { token } = useContext(AuthContext);
+
   useEffect(() => {
-    getNotes();
-  }, []);
+    if (token) getNotes();
+    else {
+      setNotes([]);
+      setLoading(false);
+    }
+  }, [token]);
 
   /* =========================
      CREATE NOTE
@@ -86,14 +96,64 @@ export const NoteProvider = ({ children }) => {
     }
   };
 
+  /* =========================
+     TOGGLE FAVORITE
+  ========================= */
+  const toggleFavorite = async (id) => {
+    try {
+      const res = await BACKEND_URL.put(`/toggle-favorite/${id}`);
+      setNotes((prev) =>
+        prev.map((note) => (note.id === id ? res.data : note))
+      );
+    } catch (error) {
+      console.error("Favorite error:", error);
+    }
+  };
+
+  /* =========================
+     FILTER AND SEARCH
+  ========================= */
+  const getFilteredNotes = () => {
+    let filtered = [...notes];
+
+    // Search by title
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((note) =>
+        note.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by date
+    if (filterDate) {
+      filtered = filtered.filter((note) => {
+        const noteDate = new Date(note.createdAt).toISOString().split("T")[0];
+        return noteDate === filterDate;
+      });
+    }
+
+    // Sort: favorites first, then by creation date
+    return filtered.sort((a, b) => {
+      if (a.favorite !== b.favorite) {
+        return b.favorite ? 1 : -1;
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  };
+
   return (
     <NoteContext.Provider
       value={{
-        notes,
+        notes: getFilteredNotes(),
+        allNotes: notes,
         loading,
+        searchTerm,
+        setSearchTerm,
+        filterDate,
+        setFilterDate,
         createNote,
         updateNote,
         deleteNote,
+        toggleFavorite,
       }}
     >
       {children}
