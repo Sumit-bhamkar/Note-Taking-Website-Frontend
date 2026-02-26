@@ -65,14 +65,20 @@ function Noteform() {
 
         {/* Content */}
         <div>
-          <textarea
-            placeholder="Write your note here..."
-            rows="5"
-            className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
-            {...register("content", {
-              required: "Content is required",
-            })}
-          />
+        <textarea
+  placeholder="Write your note here..."
+  rows="5"
+  className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+  {...register("content", {
+    required: "Content is required",
+  })}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();          // stop new line
+      handleSubmit(onSubmit)();   // manually trigger submit
+    }
+  }}
+/>
           {errors.content && (
             <p className="text-red-500 text-sm mt-1">
               {errors.content.message}
